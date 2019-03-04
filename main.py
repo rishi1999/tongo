@@ -13,15 +13,14 @@ PERIOD = 0.018
 METER = 250.0
 GRAVITY = 9.8
 
+# TODO somehow starting at (100, 100) causes the ball to gain momentum?? pls fix.
+
 
 def main():
     screen = pygame.display.set_mode(SIZE)
 
     # initialize ball
     b = Ball()
-    ballrect = b.image.get_rect()
-    ballrect.left = b.x
-    ballrect.top = b.y
 
     while True:
         for event in pygame.event.get():
@@ -29,11 +28,13 @@ def main():
                 sys.exit()
 
         # clear old ball image from screen
-        screen.blit(b.old_pos, ballrect)
+        old_rect = b.rect
+        screen.blit(b.old_pos, old_rect)
 
-        if abs(b.speed[1]) < 0.05 and ballrect.bottom > HEIGHT - 5:
+        # prevent ball from "jittering" when at bottom of screen
+        if abs(b.speed[1]) < 0.05 and b.rect.bottom > HEIGHT - 5:
             b.speed[1] = 0
-            ballrect.bottom = HEIGHT
+            b.rect.bottom = HEIGHT
             b.floored = True
 
         # apply gravity to ball
@@ -46,42 +47,40 @@ def main():
         b.speed[1] -= 0.1 * PERIOD * b.speed[1] / absolute_speed
 
         # update ball location
-        b.x += (b.speed[0] * PERIOD * METER)
-        b.y += (b.speed[1] * PERIOD * METER)
-        delta_x = int(b.x - ballrect.left)
-        delta_y = int(b.y - ballrect.top)
-        ballrect = ballrect.move(delta_x, delta_y)
+        b.rect.left += (b.speed[0] * PERIOD * METER)
+        b.rect.top += (b.speed[1] * PERIOD * METER)
+        delta_x = int(b.rect.left - old_rect.left)
+        delta_y = int(b.rect.top - old_rect.top)
+        b.rect = b.rect.move(delta_x, delta_y)
 
         # deal with collisions
-        if ballrect.left < 0:
-            ballrect.left = 0
+        if b.rect.left < 0:
+            b.rect.left = 0
             b.speed[0] = -b.speed[0]
-        if ballrect.right > WIDTH:
-            ballrect.right = WIDTH
+        if b.rect.right > WIDTH:
+            b.rect.right = WIDTH
             b.speed[0] = -b.speed[0]
-        if ballrect.top < 0:
-            ballrect.top = 0
+        if b.rect.top < 0:
+            b.rect.top = 0
             b.speed[1] = -b.speed[1]
-        if ballrect.bottom > HEIGHT:
-            ballrect.bottom = HEIGHT
+        if b.rect.bottom > HEIGHT:
+            b.rect.bottom = HEIGHT
             b.speed[1] = -b.speed[1]
 
         # update graphics
-        screen.blit(b.image, ballrect)
+        screen.blit(b.image, b.rect)
         pygame.display.update()
         time.sleep(PERIOD)
 
 
 class Ball:
-    def __init__(self):
-        r = 50
+    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=50):
         self.image = pygame.Surface((2*r, 2*r))
         pygame.draw.circle(self.image, RED, (r, r), r, 0)
         self.old_pos = pygame.Surface((2*r, 2*r))
         pygame.draw.circle(self.old_pos, BLACK, (r, r), r, 0)
         self.speed = [2.0, 0.0]
-        self.x = WIDTH / 2 - r
-        self.y = HEIGHT / 2 - r
+        self.rect = self.image.get_rect(center=center_location)
         self.floored = False
 
 
