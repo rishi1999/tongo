@@ -16,11 +16,14 @@ def main():
     gravity = 9.8
 
     screen = pygame.display.set_mode(size)
-    # screen.fill(black)
+
     b = Ball()
     ballrect = b.image.get_rect()
     ballrect.left = width / 2 - 50
     ballrect.top = height / 2 - 50
+
+    x = ballrect.left
+    y = ballrect.top
 
     while True:
         for event in pygame.event.get():
@@ -38,8 +41,11 @@ def main():
         b.speed[0] -= 0.1 * period * b.speed[0] / absolute_speed
         b.speed[1] -= 0.1 * period * b.speed[1] / absolute_speed
 
-        delta_x = int(b.speed[0] * period * meter)
-        delta_y = int(b.speed[1] * period * meter)
+        x += (b.speed[0] * period * meter)
+        y += (b.speed[1] * period * meter)
+
+        delta_x = int(x - ballrect.left)
+        delta_y = int(y - ballrect.top)
 
         ballrect = ballrect.move(delta_x, delta_y)
         if ballrect.left < 0:
