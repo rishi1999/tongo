@@ -5,73 +5,84 @@ import time
 
 pygame.init()
 
-size = width, height = 1000, 600
-black = 0, 0, 0
-red = 255, 0, 0
+SIZE = WIDTH, HEIGHT = 1000, 600
+BLACK = 0, 0, 0
+RED = 255, 0, 0
+
+PERIOD = 0.018
+METER = 250.0
+GRAVITY = 9.8
 
 
 def main():
-    period = 0.018
-    meter = 250.0
-    gravity = 9.8
+    screen = pygame.display.set_mode(SIZE)
 
-    screen = pygame.display.set_mode(size)
-
+    # initialize ball
     b = Ball()
     ballrect = b.image.get_rect()
-    ballrect.left = width / 2 - 50
-    ballrect.top = height / 2 - 50
-
-    x = ballrect.left
-    y = ballrect.top
+    ballrect.left = b.x
+    ballrect.top = b.y
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-        if abs(b.speed[1]) < 0.05 and ballrect.bottom > height - 5:
+        # clear old ball image from screen
+        screen.blit(b.old_pos, ballrect)
+
+        if abs(b.speed[1]) < 0.05 and ballrect.bottom > HEIGHT - 5:
             b.speed[1] = 0
-            ballrect.bottom = height
-            gravity = 0
+            ballrect.bottom = HEIGHT
+            b.floored = True
 
-        b.speed[1] += gravity * period
+        # apply gravity to ball
+        if not b.floored:
+            b.speed[1] += GRAVITY * PERIOD
 
+        # apply air resistance to ball
         absolute_speed = math.sqrt(b.speed[0] ** 2 + b.speed[1] ** 2)
-        b.speed[0] -= 0.1 * period * b.speed[0] / absolute_speed
-        b.speed[1] -= 0.1 * period * b.speed[1] / absolute_speed
+        b.speed[0] -= 0.1 * PERIOD * b.speed[0] / absolute_speed
+        b.speed[1] -= 0.1 * PERIOD * b.speed[1] / absolute_speed
 
-        x += (b.speed[0] * period * meter)
-        y += (b.speed[1] * period * meter)
-
-        delta_x = int(x - ballrect.left)
-        delta_y = int(y - ballrect.top)
-
+        # update ball location
+        b.x += (b.speed[0] * PERIOD * METER)
+        b.y += (b.speed[1] * PERIOD * METER)
+        delta_x = int(b.x - ballrect.left)
+        delta_y = int(b.y - ballrect.top)
         ballrect = ballrect.move(delta_x, delta_y)
+
+        # deal with collisions
         if ballrect.left < 0:
             ballrect.left = 0
             b.speed[0] = -b.speed[0]
-        if ballrect.right > width:
-            ballrect.right = width
+        if ballrect.right > WIDTH:
+            ballrect.right = WIDTH
             b.speed[0] = -b.speed[0]
         if ballrect.top < 0:
             ballrect.top = 0
             b.speed[1] = -b.speed[1]
-        if ballrect.bottom > height:
-            ballrect.bottom = height
+        if ballrect.bottom > HEIGHT:
+            ballrect.bottom = HEIGHT
             b.speed[1] = -b.speed[1]
 
-        screen.fill(black)
+        # update graphics
         screen.blit(b.image, ballrect)
-        pygame.display.flip()
-        time.sleep(period)
+        pygame.display.update()
+        time.sleep(PERIOD)
 
 
 class Ball:
     def __init__(self):
-        self.image = pygame.Surface((100, 100))
-        pygame.draw.circle(self.image, red, (50, 50), 50, 0)
+        r = 50
+        self.image = pygame.Surface((2*r, 2*r))
+        pygame.draw.circle(self.image, RED, (r, r), r, 0)
+        self.old_pos = pygame.Surface((2*r, 2*r))
+        pygame.draw.circle(self.old_pos, BLACK, (r, r), r, 0)
         self.speed = [2.0, 0.0]
+        self.x = WIDTH / 2 - r
+        self.y = HEIGHT / 2 - r
+        self.floored = False
 
 
 if __name__ == '__main__':
