@@ -51,12 +51,12 @@ def calculate_speed(velocity):
 
 
 class Ball:
-    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=50):
+    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=50, vel=(0.0, 0.0)):
         self.image = pygame.Surface((2 * r, 2 * r))
         pygame.draw.circle(self.image, RED, (r, r), r, 0)
         self.shadow = pygame.Surface((2 * r, 2 * r))
         pygame.draw.circle(self.shadow, BLACK, (r, r), r, 0)
-        self.vel = [2.0, 0.0]
+        self.vel = list(vel)
         self.rect = self.image.get_rect(center=center_location)
         self.old_rect = None
         self.r = r
