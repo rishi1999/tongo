@@ -1,14 +1,12 @@
 import math
 import sys
-
+import getopt
 import pygame
 
-pygame.init()
-
 # display constants
-SIZE = (WIDTH, HEIGHT) = (1000, 600)
-BLACK = 0, 0, 0
-RED = 255, 0, 0
+SIZE = WIDTH, HEIGHT = 1000, 600
+BG_COLOR = 0, 0, 0
+BALL_COLOR = 255, 0, 0
 
 # physics engine constants
 METER = 250.0
@@ -17,9 +15,50 @@ FRICTION = 0.1
 RESTITUTION = 0.9
 
 
-def main():
+def hex_to_rgb(color):
+    hlen = len(color)
+    return tuple(int(color[i:i + hlen / 3], 16) for i in range(0, hlen, hlen / 3))
+
+
+def main(argv):
+    global SIZE, WIDTH, HEIGHT, BG_COLOR, BALL_COLOR, METER, GRAVITY, FRICTION, RESTITUTION
+    usage_text = "insert usage text"  # TODO fix
+    try:
+        opts, args = getopt.getopt(argv, "", ["help=", "width=", "height=", "bgcolor=", "ballcolor=", "meter=",
+                                              "gravity=", "friction=", "restitution="])
+    except getopt.GetoptError:
+        print usage_text
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '--help':
+            print usage_text
+            sys.exit()
+        elif opt == '--width':
+            WIDTH = int(arg)
+            SIZE = WIDTH, HEIGHT
+        elif opt == '--height':
+            HEIGHT = int(arg)
+            SIZE = WIDTH, HEIGHT
+        elif opt == '--bgcolor':
+            BG_COLOR = hex_to_rgb(arg)
+            # TODO probably have to add some kind of exception handling or something? also for the others too probs
+        elif opt == '--ballcolor':
+            BALL_COLOR = hex_to_rgb(arg)
+            # TODO same as above
+        elif opt == '--meter':
+            METER = float(arg)
+        elif opt == '--gravity':
+            GRAVITY = float(arg)
+        elif opt == '--friction':
+            FRICTION = float(arg)
+        elif opt == '--restitution':
+            RESTITUTION = float(arg)
+
+    pygame.init()
+
     global screen
     screen = pygame.display.set_mode(SIZE)
+    # TODO fix bg color
 
     b = Ball()
     clock = pygame.time.Clock()
@@ -53,9 +92,9 @@ def calculate_speed(velocity):
 class Ball:
     def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=50, vel=(0.0, 0.0)):
         self.image = pygame.Surface((2 * r, 2 * r))
-        pygame.draw.circle(self.image, RED, (r, r), r, 0)
+        pygame.draw.circle(self.image, BALL_COLOR, (r, r), r, 0)
         self.shadow = pygame.Surface((2 * r, 2 * r))
-        pygame.draw.circle(self.shadow, BLACK, (r, r), r, 0)
+        pygame.draw.circle(self.shadow, BG_COLOR, (r, r), r, 0)
         self.vel = list(vel)
         self.rect = self.image.get_rect(center=center_location)
         self.old_rect = None
@@ -125,4 +164,4 @@ class Ball:
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
