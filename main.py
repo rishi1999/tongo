@@ -17,11 +17,13 @@ RESTITUTION = 0.9
 DEFAULT_RADIUS = 50
 
 # TODO add docstrings to functions
+# TODO test cli inputs heavily
+# TODO update readme on github to talk about cli arguments when they are production ready
 
 
 def hex_to_rgb(color):
     hlen = len(color)
-    return tuple(int(color[i:i + hlen / 3], 16) for i in range(0, hlen, hlen / 3))
+    return tuple(clamp(int(color[i:i + hlen / 3], 16), max=255) for i in range(0, hlen, hlen / 3))
 
 
 def clamp(val, min=0, max=sys.maxsize):
@@ -66,11 +68,15 @@ def main(argv):
             HEIGHT = clamp(int(arg), 3 * DEFAULT_RADIUS, 4000)
             SIZE = WIDTH, HEIGHT
         elif opt == '--bgcolor':
+            if len(arg) != 6:
+                print usage_text
+                sys.exit(2)
             BG_COLOR = hex_to_rgb(arg)
-            # TODO probably have to add some kind of exception handling or something?
         elif opt == '--ballcolor':
+            if len(arg) != 6:
+                print usage_text
+                sys.exit(2)
             BALL_COLOR = hex_to_rgb(arg)
-            # TODO same as above
         elif opt == '--meter':
             METER = clamp(float(arg), 50, 500)
         elif opt == '--gravity':
@@ -79,7 +85,6 @@ def main(argv):
             FRICTION = clamp(float(arg), max=2)
         elif opt == '--restitution':
             RESTITUTION = clamp(float(arg), max=1.5)
-    # TODO update readme on github to talk about cli arguments when they are production ready
 
     pygame.init()
 
