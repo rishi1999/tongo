@@ -14,15 +14,41 @@ GRAVITY = 9.8
 FRICTION = 0.1
 RESTITUTION = 0.9
 
+DEFAULT_RADIUS = 50
+
+# TODO add docstrings to functions
+
 
 def hex_to_rgb(color):
     hlen = len(color)
     return tuple(int(color[i:i + hlen / 3], 16) for i in range(0, hlen, hlen / 3))
 
 
+def clamp(val, min=0, max=sys.maxsize):
+    if min > max:
+        print("errrorrrrr")  # TODO figure out how to properly throw exceptions
+
+    if val < min:
+        val = min
+    elif val > max:
+        val = max
+
+    return val
+
+
 def main(argv):
     global SIZE, WIDTH, HEIGHT, BG_COLOR, BALL_COLOR, METER, GRAVITY, FRICTION, RESTITUTION
-    usage_text = "insert usage text"  # TODO fix
+    usage_text = """usage: python main.py [options]
+        options:
+            -h, --help          Displays this usage guide.
+            --width=SIZE        Sets width of the screen to SIZE.
+            --height=SIZE       Sets height of the screen to SIZE.
+            --bgcolor=COLOR     Sets the background color of the screen to COLOR.
+            --ballcolor=COLOR   Sets the color of the ball to COLOR.
+            --meter=NUM         Sets the length of a meter in the simulation to NUM pixels.
+            --gravity=NUM       Sets the acceleration due to gravity in the simulation to NUM meters squared per second.
+            --friction=NUM      Sets the coefficient of friction in the simulation to NUM.
+            --restitution=NUM   Sets the coefficient of restitution in the simulation to NUM."""
     try:
         opts, args = getopt.getopt(argv, "", ["help=", "width=", "height=", "bgcolor=", "ballcolor=", "meter=",
                                               "gravity=", "friction=", "restitution="])
@@ -34,25 +60,26 @@ def main(argv):
             print usage_text
             sys.exit()
         elif opt == '--width':
-            WIDTH = int(arg)
+            WIDTH = clamp(int(arg), 3 * DEFAULT_RADIUS, 4000)
             SIZE = WIDTH, HEIGHT
         elif opt == '--height':
-            HEIGHT = int(arg)
+            HEIGHT = clamp(int(arg), 3 * DEFAULT_RADIUS, 4000)
             SIZE = WIDTH, HEIGHT
         elif opt == '--bgcolor':
             BG_COLOR = hex_to_rgb(arg)
-            # TODO probably have to add some kind of exception handling or something? also for the others too probs
+            # TODO probably have to add some kind of exception handling or something?
         elif opt == '--ballcolor':
             BALL_COLOR = hex_to_rgb(arg)
             # TODO same as above
         elif opt == '--meter':
-            METER = float(arg)
+            METER = clamp(float(arg), 50, 500)
         elif opt == '--gravity':
-            GRAVITY = float(arg)
+            GRAVITY = clamp(float(arg), max=50)
         elif opt == '--friction':
-            FRICTION = float(arg)
+            FRICTION = clamp(float(arg), max=2)
         elif opt == '--restitution':
-            RESTITUTION = float(arg)
+            RESTITUTION = clamp(float(arg), max=1.5)
+    # TODO update readme on github to talk about cli arguments when they are production ready
 
     pygame.init()
 
@@ -90,7 +117,7 @@ def calculate_speed(velocity):
 
 
 class Ball:
-    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=50, vel=(0.0, 0.0)):
+    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=DEFAULT_RADIUS, vel=(0.0, 0.0)):
         self.image = pygame.Surface((2 * r, 2 * r))
         pygame.draw.circle(self.image, BALL_COLOR, (r, r), r, 0)
         self.shadow = pygame.Surface((2 * r, 2 * r))
