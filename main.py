@@ -17,7 +17,7 @@ RESTITUTION = 0.9
 DEFAULT_RADIUS = 50
 
 # TODO add docstrings to functions
-# TODO test cli inputs heavily
+# TODO test user-specified physics constants
 # TODO update readme on github to talk about cli arguments when they are production ready
 
 
@@ -163,8 +163,6 @@ class Ball:
             speed = calculate_speed(self.vel)
             self.vel[0] -= 0.1 * TIME * self.vel[0] / speed
             self.vel[1] -= 0.1 * TIME * self.vel[1] / speed
-
-            # TODO add friction
 
         # update ball location and velocity
         self.rect.move_ip([x * TIME * METER for x in self.vel])
