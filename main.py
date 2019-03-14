@@ -27,13 +27,11 @@ def hex_to_rgb(color):
 
 
 def clamp(val, min=0, max=sys.maxsize):
-    assert min <= max, "clamp error: min greater than max"
-
+    assert min <= max, "clamp: min greater than max"
     if val < min:
         val = min
     elif val > max:
         val = max
-
     return val
 
 
@@ -49,7 +47,9 @@ def main(argv):
             --meter=NUM         Sets the length of a meter in the simulation to NUM pixels.
             --gravity=NUM       Sets the acceleration due to gravity in the simulation to NUM meters squared per second.
             --friction=NUM      Sets the coefficient of friction in the simulation to NUM.
-            --restitution=NUM   Sets the coefficient of restitution in the simulation to NUM."""
+            --restitution=NUM   Sets the coefficient of restitution in the simulation to NUM.
+            
+            COLOR format examples: 25C3F1, 00FF46, 789ABC"""
     try:
         opts, args = getopt.getopt(argv, "", ["help=", "width=", "height=", "bgcolor=", "ballcolor=", "meter=",
                                               "gravity=", "friction=", "restitution="])
@@ -85,11 +85,16 @@ def main(argv):
         elif opt == '--restitution':
             RESTITUTION = clamp(float(arg), max=1.5)
 
+    if BG_COLOR == BALL_COLOR:
+        print("warning: bgcolor and ballcolor should not be identical!")
+        sys.exit(1)
+
     pygame.init()
 
     global screen
     screen = pygame.display.set_mode(SIZE)
-    # TODO fix bg color
+    screen.fill(BG_COLOR)
+    pygame.display.flip()
 
     b = Ball()
     clock = pygame.time.Clock()
@@ -123,14 +128,22 @@ def calculate_speed(velocity):
 class Ball:
     def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=DEFAULT_RADIUS, vel=(0.0, 0.0)):
         self.image = pygame.Surface((2 * r, 2 * r))
+        self.image.set_colorkey(BG_COLOR)
+        self.image.fill(BG_COLOR)
         pygame.draw.circle(self.image, BALL_COLOR, (r, r), r, 0)
+
         self.shadow = pygame.Surface((2 * r, 2 * r))
+        self.shadow.set_colorkey(BALL_COLOR)
+        self.shadow.fill(BALL_COLOR)
         pygame.draw.circle(self.shadow, BG_COLOR, (r, r), r, 0)
+
         self.vel = list(vel)
+        self.r = r
+
+        self.held = False
+
         self.rect = self.image.get_rect(center=center_location)
         self.old_rect = None
-        self.r = r
-        self.held = False
 
     def move(self, TIME):
         # prevent ball from "jittering" when at bottom of screen
@@ -156,6 +169,7 @@ class Ball:
         # update ball location and velocity
         self.rect.move_ip([x * TIME * METER for x in self.vel])
         self.rect.clamp_ip(screen.get_rect())
+        assert self.rect.left >= 0 and self.rect.top >= 0, "screen dimensions invalid"
         if self.rect.left == 0:
             self.vel[0] = abs(self.vel[0])
             self.vel[0] *= RESTITUTION
@@ -185,13 +199,18 @@ class Ball:
         self.rect.move_ip(delta)
 
     def update_graphics(self):
+        # fix the values of rect and old_rect to ensure that display update is synchronized with ball position
+        old = self.old_rect
+        curr = self.rect
+
         # clear old ball image from screen
-        screen.blit(self.shadow, self.old_rect)
+        screen.blit(self.shadow, old)
 
         # draw current ball image on screen
-        screen.blit(self.image, self.rect)
+        screen.blit(self.image, curr)
 
-        pygame.display.update()
+        pygame.display.update([old, curr])
+        # TODO fix the clipping of ball when updating graphics -- worst case can always go back to inefficient display.flip()
 
 
 if __name__ == '__main__':
