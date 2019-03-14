@@ -27,8 +27,7 @@ def hex_to_rgb(color):
 
 
 def clamp(val, min=0, max=sys.maxsize):
-    if min > max:
-        print("errrorrrrr")  # TODO figure out how to properly throw exceptions
+    assert min <= max, "clamp error: min greater than max"
 
     if val < min:
         val = min
