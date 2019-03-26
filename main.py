@@ -49,7 +49,7 @@ def main(argv):
             --friction=NUM      Sets the coefficient of friction in the simulation to NUM.
             --restitution=NUM   Sets the coefficient of restitution in the simulation to NUM.
             
-            COLOR format examples: 25C3F1, 00FF46, 789ABC"""
+            COLOR format examples: 25C3F1, 00FF46, 789ABC, 789abc"""
     try:
         opts, args = getopt.getopt(argv, "", ["help=", "width=", "height=", "bgcolor=", "ballcolor=", "meter=",
                                               "gravity=", "friction=", "restitution="])
@@ -172,10 +172,11 @@ class Ball:
             if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
                 self.vel[1] = 0
                 delta = FRICTION * GRAVITY * TIME
+                # TODO when friction is set to 2, there's a weird bug where sometimes it doesn't make it into this block so it just keeps going without friction
                 if self.vel[0] > 0:
-                    self.vel[0] -= delta
+                    self.vel[0] = clamp(self.vel[0] - delta, min=0)
                 else:
-                    self.vel[0] += delta
+                    self.vel[0] = clamp(self.vel[0] + delta, max=0)
             else:
                 self.vel[1] = -abs(self.vel[1])
                 self.vel[1] *= RESTITUTION
