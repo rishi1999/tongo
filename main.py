@@ -17,7 +17,6 @@ RESTITUTION = 0.9
 DEFAULT_RADIUS = 50
 
 # TODO add docstrings to functions
-# TODO test user-specified physics constants
 # TODO update readme on github to talk about cli arguments when they are production ready
 
 
@@ -83,7 +82,7 @@ def main(argv):
         elif opt == '--friction':
             FRICTION = clamp(float(arg), max=2)
         elif opt == '--restitution':
-            RESTITUTION = clamp(float(arg), max=1.5)
+            RESTITUTION = clamp(float(arg), max=10)
 
     if BG_COLOR == BALL_COLOR:
         print("warning: bgcolor and ballcolor should not be identical!")
@@ -140,6 +139,7 @@ class Ball:
         self.r = r
 
         self.held = False
+        self.exploded = False
 
         self.rect = self.image.get_rect(center=center_location)
         self.old_rect = None
@@ -149,6 +149,7 @@ class Ball:
         # apply gravity to ball
         self.vel[1] += GRAVITY * TIME
 
+        # TODO when gravity == 0, this crashes program
         # apply air resistance to ball
         speed = calculate_speed(self.vel)
         self.vel[0] -= 0.1 * TIME * self.vel[0] / speed
@@ -160,13 +161,13 @@ class Ball:
         assert self.rect.left >= 0 and self.rect.top >= 0, "screen dimensions invalid"
         if self.rect.left == 0:
             self.vel[0] = abs(self.vel[0])
-            self.vel[0] *= RESTITUTION
+            self.bounce_calculation(0)
         if self.rect.right == WIDTH:
             self.vel[0] = -abs(self.vel[0])
-            self.vel[0] *= RESTITUTION
+            self.bounce_calculation(0)
         if self.rect.top == 0:
             self.vel[1] = abs(self.vel[1])
-            self.vel[1] *= RESTITUTION
+            self.bounce_calculation(1)
         if self.rect.bottom == HEIGHT:
             # prevents ball from "jittering" when at bottom of screen
             if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
@@ -179,7 +180,7 @@ class Ball:
                     self.vel[0] = clamp(self.vel[0] + delta, max=0)
             else:
                 self.vel[1] = -abs(self.vel[1])
-                self.vel[1] *= RESTITUTION
+                self.bounce_calculation(1)
 
     def drag(self, interval):
         coords = [x - self.r for x in pygame.mouse.get_pos()]
@@ -188,6 +189,14 @@ class Ball:
         delta = pygame.mouse.get_rel()
         self.vel = [x / METER / interval for x in delta]
         self.rect.move_ip(delta)
+
+    def bounce_calculation(self, axis):
+        bounce = RESTITUTION
+        if self.exploded:
+            bounce = 0.9
+        self.vel[axis] *= bounce
+        if bounce > 1:
+            self.exploded = True
 
     def update_graphics(self):
         # fix the values of rect and old_rect to ensure that display update is synchronized with ball position
