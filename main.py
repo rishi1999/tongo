@@ -77,7 +77,7 @@ def main(argv):
                 sys.exit(2)
             BALL_COLOR = hex_to_rgb(arg)
         elif opt == '--meter':
-            METER = clamp(float(arg), 50, 500)
+            METER = clamp(float(arg), 50, 3000)
         elif opt == '--gravity':
             GRAVITY = clamp(float(arg), max=50)
         elif opt == '--friction':
@@ -112,9 +112,8 @@ def main(argv):
         b.old_rect = b.rect.copy()
 
         interval = clock.tick(60) / 1000.0
-
         if b.held:
-            b.drag(interval, speed_limit=10.0)
+            b.drag(interval)
         else:
             b.move(interval)
 
@@ -146,23 +145,14 @@ class Ball:
         self.old_rect = None
 
     def move(self, TIME):
-        # prevent ball from "jittering" when at bottom of screen
-        if abs(self.vel[1]) < 0.05 and self.rect.bottom == HEIGHT:
-            self.vel[1] = 0
 
-            delta = FRICTION * GRAVITY * TIME
-            if self.vel[0] > 0:
-                self.vel[0] -= delta
-            else:
-                self.vel[0] += delta
-        else:
-            # apply gravity to ball
-            self.vel[1] += GRAVITY * TIME
+        # apply gravity to ball
+        self.vel[1] += GRAVITY * TIME
 
-            # apply air resistance to ball
-            speed = calculate_speed(self.vel)
-            self.vel[0] -= 0.1 * TIME * self.vel[0] / speed
-            self.vel[1] -= 0.1 * TIME * self.vel[1] / speed
+        # apply air resistance to ball
+        speed = calculate_speed(self.vel)
+        self.vel[0] -= 0.1 * TIME * self.vel[0] / speed
+        self.vel[1] -= 0.1 * TIME * self.vel[1] / speed
 
         # update ball location and velocity
         self.rect.move_ip([x * TIME * METER for x in self.vel])
@@ -178,22 +168,24 @@ class Ball:
             self.vel[1] = abs(self.vel[1])
             self.vel[1] *= RESTITUTION
         if self.rect.bottom == HEIGHT:
-            self.vel[1] = -abs(self.vel[1])
-            self.vel[1] *= RESTITUTION
+            # prevents ball from "jittering" when at bottom of screen
+            if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
+                self.vel[1] = 0
+                delta = FRICTION * GRAVITY * TIME
+                if self.vel[0] > 0:
+                    self.vel[0] -= delta
+                else:
+                    self.vel[0] += delta
+            else:
+                self.vel[1] = -abs(self.vel[1])
+                self.vel[1] *= RESTITUTION
 
-    def drag(self, TIME, speed_limit):
+    def drag(self, interval):
         coords = [x - self.r for x in pygame.mouse.get_pos()]
         self.rect.left = coords[0]
         self.rect.top = coords[1]
         delta = pygame.mouse.get_rel()
-        self.vel = [x / METER / TIME for x in delta]
-
-        speed = calculate_speed(self.vel)
-        scale = 1
-        if speed > speed_limit:
-            scale = speed_limit / speed
-        self.vel = [x * scale for x in self.vel]
-
+        self.vel = [x / METER / interval for x in delta]
         self.rect.move_ip(delta)
 
     def update_graphics(self):
@@ -207,8 +199,8 @@ class Ball:
         # draw current ball image on screen
         screen.blit(self.image, curr)
 
-        pygame.display.update([old, curr])
-        # TODO fix the clipping of ball when updating graphics -- worst case can always go back to inefficient display.flip()
+        pygame.display.flip()
+        # TODO pygame.display.update([old, curr])
 
 
 if __name__ == '__main__':
