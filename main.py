@@ -193,7 +193,7 @@ class Ball:
     def bounce_calculation(self, axis):
         bounce = RESTITUTION
         if self.exploded:
-            bounce = 0.9
+            bounce = 0.9  # TODO DRY! there should be a default value list somewhere instead of duplicating the default value here
         self.vel[axis] *= bounce
         if bounce > 1:
             self.exploded = True
