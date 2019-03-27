@@ -12,6 +12,7 @@ BALL_COLOR = 255, 0, 0
 METER = 250.0
 GRAVITY = 9.8
 FRICTION = 0.1
+POST_EXPLOSION_RESTITUTION = 0.9
 RESTITUTION = 0.9
 
 DEFAULT_RADIUS = 50
@@ -193,7 +194,7 @@ class Ball:
     def bounce_calculation(self, axis):
         bounce = RESTITUTION
         if self.exploded:
-            bounce = 0.9  # TODO DRY! there should be a default value list somewhere instead of duplicating the default value here
+            bounce = POST_EXPLOSION_RESTITUTION
         self.vel[axis] *= bounce
         if bounce > 1:
             self.exploded = True
