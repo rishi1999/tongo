@@ -23,6 +23,7 @@ DRAG = 0.75
 
 
 # TODO add docstrings to functions
+# TODO look into optparse, argparse
 # TODO add optional background grid so meter size is clear
 # TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
 # TODO add rolling functionality - to make friction stuff more accurate
@@ -46,7 +47,7 @@ def clamp(val, minimum=0, maximum=sys.maxsize):
 def main(argv):
     global SIZE, WIDTH, HEIGHT, BG_COLOR, BALL_COLOR, RADIUS, METER, GRAVITY, FRICTION, RESTITUTION
     usage_text = """
-    description: runs bouncing ball physics simulation
+    description: runs bouncing ball physics simulation.
     
     usage: python main.py [options]
     
