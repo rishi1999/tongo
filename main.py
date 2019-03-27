@@ -22,10 +22,10 @@ DRAG = 0.75
 
 # TODO add docstrings to functions
 # TODO update readme on github to talk about cli arguments when they are production ready
-# TODO are mass calculations done properly
 # TODO add optional background grid so meter size is clear
 # TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
 # TODO add rolling functionality - to make friction stuff more accurate
+# TODO friction in general is very buggy; work on this
 
 
 def hex_to_rgb(color):
@@ -163,7 +163,6 @@ class Ball:
         # apply gravity to ball
         self.vel[1] += GRAVITY * interval
 
-        # TODO when gravity == 0, this crashes program
         # apply air resistance to ball
         speed = calculate_speed(self.vel)
         assert speed >= 0
@@ -190,8 +189,6 @@ class Ball:
             if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
                 self.vel[1] = 0
                 delta = FRICTION * (4.0 / 3 * math.pi * RADIUS ** 3) * GRAVITY * interval
-                # TODO when friction is set to 2, there's a weird bug where sometimes it doesn't make it
-                #  into this block so it just keeps going without friction
                 if self.vel[0] > 0:
                     self.vel[0] = clamp(self.vel[0] - delta, minimum=0)
                 else:
@@ -228,7 +225,7 @@ class Ball:
         screen.blit(self.image, curr)
 
         pygame.display.flip()
-        # TODO pygame.display.update([old, curr])
+        # TODO pygame.display.update([old, curr]) - how to get this more efficient version to work?
 
 
 if __name__ == '__main__':
