@@ -21,7 +21,6 @@ DRAG = 0.75
 
 
 # TODO add docstrings to functions
-# TODO update readme on github to talk about cli arguments when they are production ready
 # TODO add optional background grid so meter size is clear
 # TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
 # TODO add rolling functionality - to make friction stuff more accurate
