@@ -15,7 +15,7 @@ FRICTION = 0.1
 POST_EXPLOSION_RESTITUTION = 0.9
 RESTITUTION = 0.9
 
-DEFAULT_RADIUS = 50
+DEFAULT_RADIUS = 0.2
 
 # TODO add docstrings to functions
 # TODO update readme on github to talk about cli arguments when they are production ready
@@ -125,7 +125,8 @@ def calculate_speed(velocity):
 
 
 class Ball:
-    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), r=DEFAULT_RADIUS, vel=(0.0, 0.0)):
+    def __init__(self, center_location=(WIDTH / 2, HEIGHT / 2), rad=DEFAULT_RADIUS, vel=(0.0, 0.0)):
+        r = int(rad * METER)
         self.image = pygame.Surface((2 * r, 2 * r))
         self.image.set_colorkey(BG_COLOR)
         self.image.fill(BG_COLOR)
@@ -137,7 +138,7 @@ class Ball:
         pygame.draw.circle(self.shadow, BG_COLOR, (r, r), r, 0)
 
         self.vel = list(vel)
-        self.r = r
+        self.r = rad
 
         self.held = False
         self.exploded = False
@@ -184,7 +185,7 @@ class Ball:
                 self.bounce_calculation(1)
 
     def drag(self, interval):
-        coords = [x - self.r for x in pygame.mouse.get_pos()]
+        coords = [x - self.r * METER for x in pygame.mouse.get_pos()]
         self.rect.left = coords[0]
         self.rect.top = coords[1]
         delta = pygame.mouse.get_rel()
