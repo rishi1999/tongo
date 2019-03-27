@@ -1,6 +1,7 @@
+import getopt
 import math
 import sys
-import getopt
+
 import pygame
 
 # display constants
@@ -18,10 +19,13 @@ RESTITUTION = 0.9
 AIR_DENSITY = 1.25
 DRAG = 0.75
 
+
 # TODO add docstrings to functions
 # TODO update readme on github to talk about cli arguments when they are production ready
 # TODO are mass calculations done properly
 # TODO add optional background grid so meter size is clear
+# TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
+# TODO add rolling functionality - to make friction stuff more accurate
 
 
 def hex_to_rgb(color):
@@ -162,9 +166,11 @@ class Ball:
         # TODO when gravity == 0, this crashes program
         # apply air resistance to ball
         speed = calculate_speed(self.vel)
-        drag_force = AIR_DENSITY * DRAG * math.pi * RADIUS**2 / 2 * speed**2
-        self.vel[0] -= drag_force * interval * self.vel[0] / speed
-        self.vel[1] -= drag_force * interval * self.vel[1] / speed
+        assert speed >= 0
+        if speed > 0:
+            drag_force = AIR_DENSITY * DRAG * math.pi * RADIUS ** 2 / 2 * speed ** 2
+            self.vel[0] -= drag_force * interval * self.vel[0] / speed
+            self.vel[1] -= drag_force * interval * self.vel[1] / speed
 
         # update ball location and velocity
         self.rect.move_ip([x * interval * METER for x in self.vel])
@@ -183,7 +189,7 @@ class Ball:
             # prevents ball from "jittering" when at bottom of screen
             if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
                 self.vel[1] = 0
-                delta = FRICTION * GRAVITY * interval
+                delta = FRICTION * (4.0 / 3 * math.pi * RADIUS ** 3) * GRAVITY * interval
                 # TODO when friction is set to 2, there's a weird bug where sometimes it doesn't make it
                 #  into this block so it just keeps going without friction
                 if self.vel[0] > 0:
