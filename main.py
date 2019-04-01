@@ -24,8 +24,8 @@ DRAG = 0.75
 
 
 # TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
-# TODO add rolling functionality - to make friction stuff more accurate
 # TODO friction in general is very buggy; work on this
+# TODO add exception handling for bad input?
 
 
 def hex_to_rgb(color):
@@ -33,7 +33,7 @@ def hex_to_rgb(color):
     return tuple(clamp(int(color[i:i + hlen / 3], 16), maximum=255) for i in range(0, hlen, hlen / 3))
 
 
-def clamp(val, minimum=0, maximum=sys.maxsize):
+def clamp(val, minimum=0.0, maximum=sys.maxsize):
     assert minimum <= maximum, "clamp: minimum greater than maximum"
     if val < minimum:
         val = minimum
@@ -146,7 +146,7 @@ def main(argv):
 
 
 def calculate_speed(velocity):
-    return math.sqrt(velocity[0] ** 2 + velocity[1] ** 2)
+    return math.sqrt(velocity[0] ** 2.0 + velocity[1] ** 2.0)
 
 
 class Ball:
@@ -179,13 +179,15 @@ class Ball:
         speed = calculate_speed(self.vel)
         assert speed >= 0
         if speed > 0:
-            drag_force = AIR_DENSITY * DRAG * math.pi * RADIUS ** 2 / 2 * speed ** 2
+            drag_force = AIR_DENSITY * DRAG * math.pi * RADIUS ** 2.0 / 2.0 * speed ** 2.0
             self.vel[0] -= drag_force * interval * self.vel[0] / speed
             self.vel[1] -= drag_force * interval * self.vel[1] / speed
 
-        # update ball location and velocity
+        # update ball position
         self.rect.move_ip([x * interval * METER for x in self.vel])
         self.rect.clamp_ip(screen.get_rect())
+
+        # deal with bounce mechanics
         assert self.rect.left >= 0 and self.rect.top >= 0, "screen dimensions invalid"
         if self.rect.left == 0:
             self.vel[0] = abs(self.vel[0])
@@ -200,11 +202,13 @@ class Ball:
             # prevents ball from "jittering" when at bottom of screen
             if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
                 self.vel[1] = 0
-                delta = FRICTION * (4.0 / 3 * math.pi * RADIUS ** 3) * GRAVITY * interval
+
+                # apply friction to ball
+                delta = FRICTION * (4.0 / 3.0 * math.pi * RADIUS ** 3.0) * GRAVITY * float(interval)
                 if self.vel[0] > 0:
-                    self.vel[0] = clamp(self.vel[0] - delta, minimum=0)
+                    self.vel[0] = clamp(self.vel[0] - delta, minimum=0.0)
                 else:
-                    self.vel[0] = clamp(self.vel[0] + delta, maximum=0)
+                    self.vel[0] = clamp(self.vel[0] + delta, maximum=0.0)
             else:
                 self.vel[1] = -abs(self.vel[1])
                 self.bounce_calculation(1)
