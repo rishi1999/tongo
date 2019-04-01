@@ -212,7 +212,7 @@ class Ball:
     def drag(self, interval):
         delta = pygame.mouse.get_rel()
         self.rect.move_ip(delta)
-        self.vel = [x / METER / interval for x in delta]
+        self.vel = [float(x) / METER / interval for x in delta]
 
     def bounce_calculation(self, axis):
         bounce = RESTITUTION
