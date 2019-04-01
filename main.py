@@ -22,9 +22,7 @@ AIR_DENSITY = 1.25
 DRAG = 0.75
 
 
-# TODO add docstrings to functions
-# TODO look into optparse, argparse
-# TODO add optional background grid so meter size is clear
+
 # TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
 # TODO add rolling functionality - to make friction stuff more accurate
 # TODO friction in general is very buggy; work on this
@@ -210,7 +208,6 @@ class Ball:
         self.rect.top = coords[1]
         delta = pygame.mouse.get_rel()
         self.vel = [x / METER / interval for x in delta]
-        self.rect.move_ip(delta)
 
     def bounce_calculation(self, axis):
         bounce = RESTITUTION
