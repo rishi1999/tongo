@@ -118,16 +118,23 @@ def main(argv):
     clock = pygame.time.Clock()
 
     while True:
+        picked_up = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 b.held = True
                 pygame.mouse.get_rel()
+                picked_up = True
             if event.type == pygame.MOUSEBUTTONUP:
                 b.held = False
 
         b.old_rect = b.rect.copy()
+
+        if picked_up:
+            coords = [x - RADIUS * METER for x in pygame.mouse.get_pos()]
+            b.rect.left = coords[0]
+            b.rect.top = coords[1]
 
         interval = clock.tick(60) / 1000.0
         if b.held:
@@ -203,10 +210,8 @@ class Ball:
                 self.bounce_calculation(1)
 
     def drag(self, interval):
-        coords = [x - RADIUS * METER for x in pygame.mouse.get_pos()]
-        self.rect.left = coords[0]
-        self.rect.top = coords[1]
         delta = pygame.mouse.get_rel()
+        self.rect.move_ip(delta)
         self.vel = [x / METER / interval for x in delta]
 
     def bounce_calculation(self, axis):
