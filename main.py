@@ -22,8 +22,8 @@ AIR_DENSITY = 1.25
 DRAG = 0.75
 
 
-# TODO friction in general is very buggy; work on this
-# TODO add exception handling for bad input?
+# TODO friction has inconsistent effects. debug this.
+# TODO add exception handling for bad input.
 
 
 def hex_to_rgb(color):
