@@ -10,6 +10,7 @@ import pygame
 SIZE = WIDTH, HEIGHT = 1000, 600
 BG_COLOR = 0, 0, 0
 BALL_COLOR = 255, 0, 0
+MINIMUM_HEIGHT = 0.05
 
 # physics engine constants
 RADIUS = 0.2
@@ -150,7 +151,7 @@ def main(argv):
 
 def calculate_speed(velocity):
     try:
-        return int(math.sqrt(velocity[0] ** 2.0 + velocity[1] ** 2.0))
+        return math.sqrt(velocity[0] ** 2.0 + velocity[1] ** 2.0)
     except OverflowError:
         break_speed_limit()
 
@@ -197,7 +198,7 @@ class Ball:
 
         # constraining delta to prevent overflow in rect.move_ip
         delta[0] = clamp(delta[0], minimum=-WIDTH, maximum=WIDTH)
-        delta[1] = clamp(delta[0], minimum=-HEIGHT, maximum=HEIGHT)
+        delta[1] = clamp(delta[1], minimum=-HEIGHT, maximum=HEIGHT)
 
         self.rect.move_ip(delta)
         self.rect.clamp_ip(screen.get_rect())
@@ -215,7 +216,7 @@ class Ball:
             self.bounce_calculation(1)
         if self.rect.bottom == HEIGHT:
             # prevents ball from "jittering" when at bottom of screen
-            if abs(self.vel[1]) < 0.05:  # TODO remove this magic number somehow
+            if abs(self.vel[1]) < MINIMUM_HEIGHT:
                 self.vel[1] = 0
 
                 # apply friction to ball
