@@ -22,8 +22,6 @@ AIR_DENSITY = 1.25
 DRAG = 0.75
 
 
-
-# TODO if radius is big and speed is too fast, it can crash (because of overflow i believe)
 # TODO friction in general is very buggy; work on this
 # TODO add exception handling for bad input?
 
@@ -40,6 +38,11 @@ def clamp(val, minimum=0.0, maximum=sys.maxsize):
     elif val > maximum:
         val = maximum
     return val
+
+
+def break_speed_limit():
+    print("warning: no exceeding the speed of light!", file=sys.stderr)
+    sys.exit(1)
 
 
 def main(argv):
@@ -67,11 +70,11 @@ def main(argv):
         opts, args = getopt.getopt(argv, "", ["help=", "width=", "height=", "bgcolor=", "ballcolor=", "radius=",
                                               "meter=", "gravity=", "friction=", "restitution="])
     except getopt.GetoptError:
-        print usage_text
+        print(usage_text, file=sys.stderr)
         sys.exit(2)
     for opt, arg in opts:
         if opt == '--help':
-            print usage_text
+            print(usage_text)
             sys.exit()
         elif opt == '--width':
             WIDTH = clamp(int(arg), 150, 4000)
@@ -81,12 +84,12 @@ def main(argv):
             SIZE = WIDTH, HEIGHT
         elif opt == '--bgcolor':
             if len(arg) != 6:
-                print usage_text
+                print(usage_text, file=sys.stderr)
                 sys.exit(2)
             BG_COLOR = hex_to_rgb(arg)
         elif opt == '--ballcolor':
             if len(arg) != 6:
-                print usage_text
+                print(usage_text, file=sys.stderr)
                 sys.exit(2)
             BALL_COLOR = hex_to_rgb(arg)
         elif opt == '--radius':
@@ -101,10 +104,10 @@ def main(argv):
             RESTITUTION = clamp(float(arg), maximum=10)
 
     if BG_COLOR == BALL_COLOR:
-        print("warning: bgcolor and ballcolor should not be identical!")
+        print("warning: bgcolor and ballcolor should not be identical!", file=sys.stderr)
         sys.exit(1)
     if RADIUS * 2 * METER > min(SIZE):
-        print("warning: ball radius too large for given window size!")
+        print("warning: ball radius too large for given window size!", file=sys.stderr)
         sys.exit(1)
 
     pygame.init()
@@ -146,7 +149,10 @@ def main(argv):
 
 
 def calculate_speed(velocity):
-    return math.sqrt(velocity[0] ** 2.0 + velocity[1] ** 2.0)
+    try:
+        return int(math.sqrt(velocity[0] ** 2.0 + velocity[1] ** 2.0))
+    except OverflowError:
+        break_speed_limit()
 
 
 class Ball:
@@ -184,7 +190,16 @@ class Ball:
             self.vel[1] -= drag_force * interval * self.vel[1] / speed
 
         # update ball position
-        self.rect.move_ip([x * interval * METER for x in self.vel])
+        delta = [x * interval * METER for x in self.vel]
+
+        if math.isinf(delta[0]) or math.isinf(delta[1]):
+            break_speed_limit()
+
+        # constraining delta to prevent overflow in rect.move_ip
+        delta[0] = clamp(delta[0], minimum=-WIDTH, maximum=WIDTH)
+        delta[1] = clamp(delta[0], minimum=-HEIGHT, maximum=HEIGHT)
+
+        self.rect.move_ip(delta)
         self.rect.clamp_ip(screen.get_rect())
 
         # deal with bounce mechanics
