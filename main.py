@@ -24,7 +24,6 @@ DRAG = 0.75
 
 
 # TODO friction has inconsistent effects. debug this.
-# TODO add exception handling for bad input.
 
 
 def hex_to_rgb(color):
@@ -73,43 +72,48 @@ def main(argv):
     except getopt.GetoptError:
         print(usage_text, file=sys.stderr)
         sys.exit(2)
-    for opt, arg in opts:
-        if opt == '--help':
-            print(usage_text)
-            sys.exit()
-        elif opt == '--width':
-            WIDTH = clamp(int(arg), 150, 4000)
-            SIZE = WIDTH, HEIGHT
-        elif opt == '--height':
-            HEIGHT = clamp(int(arg), 150, 4000)
-            SIZE = WIDTH, HEIGHT
-        elif opt == '--bgcolor':
-            if len(arg) != 6:
-                print(usage_text, file=sys.stderr)
-                sys.exit(2)
-            BG_COLOR = hex_to_rgb(arg)
-        elif opt == '--ballcolor':
-            if len(arg) != 6:
-                print(usage_text, file=sys.stderr)
-                sys.exit(2)
-            BALL_COLOR = hex_to_rgb(arg)
-        elif opt == '--radius':
-            RADIUS = clamp(float(arg), 0.01, 5)
-        elif opt == '--meter':
-            METER = clamp(float(arg), 50, 10000)
-        elif opt == '--gravity':
-            GRAVITY = clamp(float(arg), maximum=50)
-        elif opt == '--friction':
-            FRICTION = clamp(float(arg), maximum=2)
-        elif opt == '--restitution':
-            RESTITUTION = clamp(float(arg), maximum=10)
 
-    if BG_COLOR == BALL_COLOR:
-        print("warning: bgcolor and ballcolor should not be identical!", file=sys.stderr)
-        sys.exit(1)
-    if RADIUS * 2 * METER > min(SIZE):
-        print("warning: ball radius too large for given window size!", file=sys.stderr)
-        sys.exit(1)
+    try:
+        for opt, arg in opts:
+            if opt == '--help':
+                print(usage_text)
+                sys.exit()
+            elif opt == '--width':
+                WIDTH = clamp(int(arg), 150, 4000)
+                SIZE = WIDTH, HEIGHT
+            elif opt == '--height':
+                HEIGHT = clamp(int(arg), 150, 4000)
+                SIZE = WIDTH, HEIGHT
+            elif opt == '--bgcolor':
+                if len(arg) != 6:
+                    print(usage_text, file=sys.stderr)
+                    sys.exit(2)
+                BG_COLOR = hex_to_rgb(arg)
+            elif opt == '--ballcolor':
+                if len(arg) != 6:
+                    print(usage_text, file=sys.stderr)
+                    sys.exit(2)
+                BALL_COLOR = hex_to_rgb(arg)
+            elif opt == '--radius':
+                RADIUS = clamp(float(arg), 0.01, 5)
+            elif opt == '--meter':
+                METER = clamp(float(arg), 50, 10000)
+            elif opt == '--gravity':
+                GRAVITY = clamp(float(arg), maximum=50)
+            elif opt == '--friction':
+                FRICTION = clamp(float(arg), maximum=2)
+            elif opt == '--restitution':
+                RESTITUTION = clamp(float(arg), maximum=10)
+
+        if BG_COLOR == BALL_COLOR:
+            print("warning: bgcolor and ballcolor should not be identical!", file=sys.stderr)
+            sys.exit(1)
+        if RADIUS * 2 * METER > min(SIZE):
+            print("warning: ball radius too large for given window size!", file=sys.stderr)
+            sys.exit(1)
+    except ValueError:
+        print(usage_text, file=sys.stderr)
+        sys.exit(2)
 
     pygame.init()
 
