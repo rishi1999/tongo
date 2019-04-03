@@ -29,7 +29,7 @@ DRAG = 0.75
 
 def hex_to_rgb(color):
     hlen = len(color)
-    return tuple(clamp(int(color[i:i + hlen / 3], 16), maximum=255) for i in range(0, hlen, hlen / 3))
+    return tuple(clamp(int(color[i:i + hlen // 3], 16), maximum=255) for i in range(0, hlen, hlen // 3))
 
 
 def clamp(val, minimum=0.0, maximum=sys.maxsize):
